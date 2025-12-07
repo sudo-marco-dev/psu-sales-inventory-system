@@ -1,18 +1,12 @@
-// Prisma Schema for Sales and Inventory Management System
+// Prisma Schema for Sales and Inventory Management System - SQLite
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-enum UserRole {
-  ADMIN
-  CASHIER
-  INVENTORY_CLERK
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -20,7 +14,7 @@ model User {
   username  String   @unique
   password  String
   fullName  String
-  role      UserRole
+  role      String   // ADMIN, CASHIER, INVENTORY_CLERK
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
