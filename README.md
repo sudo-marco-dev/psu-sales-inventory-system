@@ -1,127 +1,233 @@
-# PSU Sales and Inventory Management System
+# PSU Sales and Inventory Management System - MVP
 
-A modern Sales and Inventory Management System built with Next.js, Prisma, and PostgreSQL for Palawan State University - ADS Final Project.
+A complete Sales and Inventory Management System built with Next.js, Prisma, and SQLite for Palawan State University - ADS Final Project.
 
-## 🚀 Tech Stack
+## ✨ Features Implemented (MVP)
 
-- **Frontend**: Next.js 14 (App Router), React, TypeScript
-- **UI Components**: shadcn/ui, Tailwind CSS, Radix UI
-- **Backend**: Next.js API Routes
-- **Database**: PostgreSQL with Prisma ORM
-- **Deployment**: Vercel (Frontend) + Supabase (Database)
+✅ **Authentication System**
+- Login with username/password
+- Role-based access (Admin, Cashier, Inventory Clerk)
+- Session management
 
-## ✨ Features
+✅ **Dashboard**
+- Key metrics (Total Products, Low Stock Alerts, Today's Revenue, Sales Count)
+- Recent sales list
+- Low stock alerts
+- Role-based content
 
-- ✅ Product and Inventory Management
-- ✅ Sales Transaction Processing (POS)
-- ✅ Purchase and Restocking Management
-- ✅ Supplier Management
-- ✅ Reports and Analytics
-- ✅ User Account and Role Management (Admin, Cashier, Inventory Clerk)
-- ✅ Search and Filtering
-- ✅ Backup and Data Security
+✅ **Product Management**
+- View all products
+- Search products by name or code
+- Display stock levels, prices, categories
+- Low stock indicators
 
-## 📋 Prerequisites
+✅ **Point of Sale (POS)**
+- Product search and selection
+- Shopping cart management
+- Quantity adjustments
+- Real-time stock validation
+- Automatic inventory updates on sale
+- Receipt number generation
 
-- Node.js 18+ 
-- PostgreSQL database (or Supabase account)
-- npm or yarn
+## 🚀 Quick Start
 
-## 🛠️ Setup Instructions
+### Prerequisites
+- Node.js 18+ installed
+- Git installed
 
-### 1. Clone the repository
+### Setup Instructions
+
 ```bash
+# 1. Navigate to your project folder
+cd C:\\Users\\marco\\Documents\\ADS\\ADS-final-project
+
+# 2. If not already cloned, clone the repository
 git clone https://github.com/sudo-marco-dev/psu-sales-inventory-system.git
 cd psu-sales-inventory-system
-```
 
-### 2. Install dependencies
-```bash
+# 3. Pull the latest changes
+git pull
+
+# 4. Install dependencies
 npm install
-```
 
-### 3. Set up environment variables
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your database URL:
-- For local PostgreSQL: `postgresql://user:password@localhost:5432/psu_sales_inventory`
-- For Supabase: Get the connection string from your Supabase project settings
-
-### 4. Set up the database
-```bash
+# 5. Set up the database
 npm run db:push
-```
 
-### 5. Run the development server
-```bash
+# 6. Seed the database with sample data
+npm run db:seed
+
+# 7. Start the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 📊 Database Management
+## 👤 Default User Accounts
 
-```bash
-# Open Prisma Studio (visual database editor)
-npm run db:studio
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | `admin` | `admin123` |
+| Cashier | `cashier` | `cashier123` |
+| Inventory Clerk | `clerk` | `clerk123` |
 
-# Push schema changes to database
-npm run db:push
+## 📊 Tech Stack
 
-# Generate Prisma Client
-npm run db:generate
-```
+- **Frontend**: Next.js 14 (App Router), React, TypeScript
+- **UI**: Tailwind CSS, shadcn/ui components, Radix UI
+- **Backend**: Next.js API Routes
+- **Database**: SQLite with Prisma ORM
+- **Authentication**: Custom auth with bcryptjs
 
-## 🚢 Deployment
+### Why This Stack?
 
-### Deploy to Vercel
+**Next.js 14**
+- ✅ Single framework for frontend + backend
+- ✅ Built-in API routes (no separate backend needed)
+- ✅ Fast development with hot reload
+- ✅ Easy deployment to Vercel
 
-1. Push your code to GitHub
-2. Import your repository on [Vercel](https://vercel.com)
-3. Add your `DATABASE_URL` environment variable
-4. Deploy!
+**SQLite + Prisma**
+- ✅ Zero configuration - no database server needed
+- ✅ Perfect for local development and testing
+- ✅ Type-safe database queries with Prisma
+- ✅ Can migrate to PostgreSQL/MySQL later if needed
 
-### Database Hosting (Supabase)
-
-1. Create a free account at [Supabase](https://supabase.com)
-2. Create a new project
-3. Copy the PostgreSQL connection string
-4. Use it as your `DATABASE_URL`
-
-## 👥 Default Users
-
-After seeding the database, you can log in with:
-
-- **Admin**: `admin` / `admin123`
-- **Cashier**: `cashier` / `cashier123`
-- **Inventory Clerk**: `clerk` / `clerk123`
+**Tailwind CSS + shadcn/ui**
+- ✅ Rapid UI development
+- ✅ Pre-built accessible components
+- ✅ Consistent design system
+- ✅ Fully customizable
 
 ## 📁 Project Structure
 
 ```
 psu-sales-inventory-system/
-├── app/                    # Next.js App Router pages
-│   ├── api/               # API routes
-│   ├── dashboard/         # Dashboard pages
-│   └── layout.tsx         # Root layout
-├── components/            # React components
-│   ├── ui/               # shadcn/ui components
-│   └── ...               # Feature components
-├── lib/                   # Utility functions
-├── prisma/               # Database schema and migrations
-│   └── schema.prisma     # Prisma schema
-└── public/               # Static files
+├── app/
+│   ├── api/                  # API routes
+│   │   ├── auth/login/       # Login endpoint
+│   │   ├── products/         # Products CRUD
+│   │   ├── sales/            # Sales transactions
+│   │   ├── categories/       # Categories
+│   │   ├── suppliers/        # Suppliers
+│   │   └── dashboard/        # Dashboard stats
+│   ├── dashboard/            # Protected pages
+│   │   ├── page.tsx          # Dashboard home
+│   │   ├── products/         # Products page
+│   │   ├── pos/              # Point of Sale
+│   │   └── layout.tsx        # Dashboard layout
+│   ├── login/                # Login page
+│   ├── layout.tsx            # Root layout
+│   └── globals.css           # Global styles
+├── components/
+│   └── ui/                   # shadcn/ui components
+├── lib/
+│   ├── prisma.ts             # Prisma client
+│   ├── auth.ts               # Auth helpers
+│   └── utils.ts              # Utility functions
+├── prisma/
+│   ├── schema.prisma         # Database schema
+│   ├── seed.ts               # Seed script
+│   └── dev.db                # SQLite database (created after setup)
+├── package.json
+├── tsconfig.json
+└── tailwind.config.ts
 ```
+
+## 🛠️ Database Commands
+
+```bash
+# Push schema changes to database
+npm run db:push
+
+# Open Prisma Studio (visual database editor)
+npm run db:studio
+
+# Generate Prisma Client
+npm run db:generate
+
+# Seed database with sample data
+npm run db:seed
+```
+
+## 📝 Sample Data
+
+The seed script creates:
+- 3 users (Admin, Cashier, Clerk)
+- 2 categories (Electronics, Stationery)
+- 1 supplier (Tech Supplies Inc.)
+- 4 sample products
+
+## 🔑 Access Control
+
+| Page/Feature | Admin | Cashier | Inventory Clerk |
+|--------------|-------|---------|----------------|
+| Dashboard | ✅ | ✅ | ✅ |
+| POS (Sales) | ✅ | ✅ | ❌ |
+| Products | ✅ | ❌ | ✅ |
+
+## 💡 Features to Add Next
+
+1. **Purchase Management** - Restocking system
+2. **Supplier Management** - CRUD for suppliers
+3. **Reports & Analytics** - Sales reports, inventory reports
+4. **User Management** - Add/edit users (Admin only)
+5. **Export Features** - Export reports to PDF/Excel
+6. **Receipt Printing** - Print sales receipts
+
+## 🐛 Troubleshooting
+
+### Database Issues
+If you encounter database errors:
+```bash
+# Delete the database and recreate
+rm prisma/dev.db
+npm run db:push
+npm run db:seed
+```
+
+### Port Already in Use
+If port 3000 is busy:
+```bash
+# Use a different port
+npm run dev -- -p 3001
+```
+
+### Module Not Found
+```bash
+# Reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install
+```
+
+## 🚀 Deployment (Optional)
+
+For production deployment:
+
+1. **Vercel** (Recommended)
+   - Push to GitHub
+   - Import repo on vercel.com
+   - Deploy automatically
+
+2. **Database**
+   - For production, switch to PostgreSQL (Supabase)
+   - Update `schema.prisma` datasource
+   - Run migrations
+
+## 📚 Documentation
+
+- [Next.js Docs](https://nextjs.org/docs)
+- [Prisma Docs](https://www.prisma.io/docs)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [shadcn/ui](https://ui.shadcn.com)
 
 ## 🤝 Contributing
 
-This is an academic project. For contributions, please create a pull request.
+This is an academic project. Feel free to fork and modify for your own use.
 
 ## 📄 License
 
-MIT License - feel free to use this for educational purposes.
+MIT License - Free to use for educational purposes.
 
 ---
 
