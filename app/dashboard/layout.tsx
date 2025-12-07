@@ -65,7 +65,7 @@ export default function DashboardLayout({
   const filteredNav = navigation.filter(item => item.roles.includes(user.role));
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 flex">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -77,7 +77,7 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out
-        lg:translate-x-0 lg:static lg:inset-0
+        lg:relative lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex items-center justify-between h-16 px-6 bg-slate-800 border-b border-slate-700">
@@ -92,8 +92,8 @@ export default function DashboardLayout({
             <div className="p-2 bg-blue-600 rounded-full">
               <UserIcon size={20} className="text-white" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-white">{user.fullName}</p>
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium text-white truncate">{user.fullName}</p>
               <p className="text-xs text-slate-400">{user.role}</p>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function DashboardLayout({
                       : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                   }`}
                 >
-                  <item.icon size={20} className="mr-3" />
+                  <item.icon size={20} className="mr-3 flex-shrink-0" />
                   {item.name}
                 </Link>
               );
@@ -132,8 +132,9 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      {/* Main content */}
-      <div className="lg:ml-0">
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile header */}
         <header className="bg-white border-b border-gray-200 lg:hidden">
           <div className="flex items-center justify-between h-16 px-4">
             <button onClick={() => setSidebarOpen(true)} className="text-gray-500 hover:text-gray-700">
@@ -144,7 +145,8 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <main className="p-4 md:p-8">
+        {/* Main content */}
+        <main className="flex-1 overflow-auto p-4 md:p-8">
           {children}
         </main>
       </div>
