@@ -77,58 +77,68 @@ async function main() {
     },
   });
 
-  // Create products
-  await prisma.product.createMany({
-    data: [
-      {
-        code: 'PROD-001',
-        name: 'USB Flash Drive 32GB',
-        description: 'High-speed USB 3.0 flash drive',
-        categoryId: electronics.id,
-        supplierId: supplier.id,
-        unitPrice: 250.00,
-        stockLevel: 50,
-        reorderLevel: 10,
-      },
-      {
-        code: 'PROD-002',
-        name: 'Ballpen (Blue)',
-        description: 'Smooth writing ballpoint pen',
-        categoryId: stationery.id,
-        supplierId: supplier.id,
-        unitPrice: 10.00,
-        stockLevel: 200,
-        reorderLevel: 50,
-      },
-      {
-        code: 'PROD-003',
-        name: 'Notebook A4',
-        description: '100 pages spiral notebook',
-        categoryId: stationery.id,
-        supplierId: supplier.id,
-        unitPrice: 45.00,
-        stockLevel: 100,
-        reorderLevel: 20,
-      },
-      {
-        code: 'PROD-004',
-        name: 'Computer Mouse',
-        description: 'Wireless optical mouse',
-        categoryId: electronics.id,
-        supplierId: supplier.id,
-        unitPrice: 350.00,
-        stockLevel: 30,
-        reorderLevel: 5,
-      },
-    ],
-    skipDuplicates: true,
-  });
+  // Create products individually (SQLite compatible)
+  const products = [
+    {
+      code: 'PROD-001',
+      name: 'USB Flash Drive 32GB',
+      description: 'High-speed USB 3.0 flash drive',
+      categoryId: electronics.id,
+      supplierId: supplier.id,
+      unitPrice: 250.00,
+      stockLevel: 50,
+      reorderLevel: 10,
+    },
+    {
+      code: 'PROD-002',
+      name: 'Ballpen (Blue)',
+      description: 'Smooth writing ballpoint pen',
+      categoryId: stationery.id,
+      supplierId: supplier.id,
+      unitPrice: 10.00,
+      stockLevel: 200,
+      reorderLevel: 50,
+    },
+    {
+      code: 'PROD-003',
+      name: 'Notebook A4',
+      description: '100 pages spiral notebook',
+      categoryId: stationery.id,
+      supplierId: supplier.id,
+      unitPrice: 45.00,
+      stockLevel: 100,
+      reorderLevel: 20,
+    },
+    {
+      code: 'PROD-004',
+      name: 'Computer Mouse',
+      description: 'Wireless optical mouse',
+      categoryId: electronics.id,
+      supplierId: supplier.id,
+      unitPrice: 350.00,
+      stockLevel: 30,
+      reorderLevel: 5,
+    },
+  ];
+
+  for (const product of products) {
+    await prisma.product.upsert({
+      where: { code: product.code },
+      update: {},
+      create: product,
+    });
+  }
 
   console.log('✅ Database seeded successfully!');
   console.log('\n👤 Default Users:');
   console.log('   Admin: username=admin, password=admin123');
   console.log('   Cashier: username=cashier, password=cashier123');
   console.log('   Clerk: username=clerk, password=clerk123');
+  console.log('\n📦 Created:');
+  console.log('   - 3 users');
+  console.log('   - 2 categories');
+  console.log('   - 1 supplier');
+  console.log('   - 4 products');
 }
 
 main()
