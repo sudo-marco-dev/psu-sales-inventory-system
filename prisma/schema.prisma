@@ -1,0 +1,144 @@
+// Prisma Schema for Sales and Inventory Management System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CASHIER
+  INVENTORY_CLERK
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  fullName  String
+  role      UserRole
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sales     Sale[]
+  purchases Purchase[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Supplier {
+  id             String    @id @default(cuid())
+  companyName    String
+  contactPerson  String
+  email          String?
+  phone          String
+  address        String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  products  Product[]
+  purchases Purchase[]
+
+  @@map("suppliers")
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  name         String
+  description  String?
+  categoryId   String
+  supplierId   String
+  unitPrice    Float
+  stockLevel   Int      @default(0)
+  reorderLevel Int      @default(10)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  category     Category      @relation(fields: [categoryId], references: [id])
+  supplier     Supplier      @relation(fields: [supplierId], references: [id])
+  saleItems    SaleItem[]
+  purchaseItems PurchaseItem[]
+
+  @@map("products")
+}
+
+model Sale {
+  id          String   @id @default(cuid())
+  saleNumber  String   @unique
+  userId      String
+  totalAmount Float
+  taxAmount   Float    @default(0)
+  discount    Float    @default(0)
+  netAmount   Float
+  paymentMethod String @default("CASH")
+  createdAt   DateTime @default(now())
+
+  user      User       @relation(fields: [userId], references: [id])
+  saleItems SaleItem[]
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id        String @id @default(cuid())
+  saleId    String
+  productId String
+  quantity  Int
+  unitPrice Float
+  subtotal  Float
+
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("sale_items")
+}
+
+model Purchase {
+  id             String   @id @default(cuid())
+  purchaseNumber String   @unique
+  userId         String
+  supplierId     String
+  totalAmount    Float
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  user          User           @relation(fields: [userId], references: [id])
+  supplier      Supplier       @relation(fields: [supplierId], references: [id])
+  purchaseItems PurchaseItem[]
+
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id         String @id @default(cuid())
+  purchaseId String
+  productId  String
+  quantity   Int
+  unitCost   Float
+  subtotal   Float
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@map("purchase_items")
+}
