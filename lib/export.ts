@@ -45,7 +45,23 @@ export const exportSalesReportToPDF = (data: any, period: string) => {
     yPosition += 6;
   });
 
-  yPosition += 5;
+  yPosition += 3;
+
+  // Payment Methods Breakdown
+  if (data.paymentMethodStats && Object.keys(data.paymentMethodStats).length > 0) {
+    doc.setFontSize(12);
+    doc.text('Payment Methods', 20, yPosition);
+    yPosition += 8;
+
+    doc.setFontSize(10);
+    Object.entries(data.paymentMethodStats).forEach(([method, stats]: [string, any]) => {
+      const percentage = ((stats.revenue / data.totalRevenue) * 100).toFixed(1);
+      doc.text(`${method}:`, 25, yPosition);
+      doc.text(`${stats.count} sales - ₱${stats.revenue.toFixed(2)} (${percentage}%)`, pageWidth - 40, yPosition, { align: 'right' });
+      yPosition += 6;
+    });
+    yPosition += 3;
+  }
 
   // Sales Details
   if (data.sales && data.sales.length > 0) {
@@ -54,10 +70,10 @@ export const exportSalesReportToPDF = (data: any, period: string) => {
     yPosition += 8;
 
     // Table headers
-    doc.setFontSize(9);
-    const tableLeft = 20;
-    const columns = ['Date', 'Receipt #', 'Cashier', 'Amount', 'Items'];
-    const columnWidths = [30, 35, 35, 30, 20];
+    doc.setFontSize(8);
+    const tableLeft = 15;
+    const columns = ['Date', 'Receipt #', 'Payment', 'Amount'];
+    const columnWidths = [30, 40, 25, 30];
 
     columns.forEach((col, index) => {
       doc.text(col, tableLeft + columnWidths.slice(0, index).reduce((a, b) => a + b, 0), yPosition);
@@ -65,23 +81,23 @@ export const exportSalesReportToPDF = (data: any, period: string) => {
 
     yPosition += 5;
     doc.setDrawColor(200);
-    doc.line(tableLeft, yPosition, pageWidth - 20, yPosition);
+    doc.line(tableLeft, yPosition, pageWidth - 15, yPosition);
     yPosition += 4;
 
     // Table data
-    data.sales.slice(0, 15).forEach((sale: any) => {
+    data.sales.slice(0, 20).forEach((sale: any) => {
       if (yPosition > pageHeight - 20) {
         doc.addPage();
         yPosition = 20;
       }
 
       const date = new Date(sale.createdAt).toLocaleDateString();
+      const paymentMethod = sale.paymentMethod || 'CASH';
       const values = [
         date,
         sale.saleNumber,
-        sale.user.fullName,
+        paymentMethod,
         `₱${sale.netAmount.toFixed(2)}`,
-        sale.saleItems.length.toString(),
       ];
 
       values.forEach((val, index) => {
@@ -247,7 +263,7 @@ export const exportSalesReportToExcel = (data: any, period: string) => {
   const workbook = XLSX.utils.book_new();
 
   // Summary sheet
-  const summaryData = [
+  const summaryRows = [
     ['Palawan State University - Sales Report'],
     [`Period: ${period.toUpperCase()}`],
     [`Generated: ${new Date().toLocaleString()}`],
@@ -259,25 +275,36 @@ export const exportSalesReportToExcel = (data: any, period: string) => {
     ['Average Sale', `₱${data.averageSale.toFixed(2)}`],
   ];
 
-  const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-  summarySheet['!cols'] = [{ wch: 25 }, { wch: 20 }];
+  // Add payment method stats
+  if (data.paymentMethodStats && Object.keys(data.paymentMethodStats).length > 0) {
+    summaryRows.push([]);
+    summaryRows.push(['Payment Method', 'Count', 'Revenue', 'Percentage']);
+    Object.entries(data.paymentMethodStats).forEach(([method, stats]: [string, any]) => {
+      const percentage = ((stats.revenue / data.totalRevenue) * 100).toFixed(1);
+      summaryRows.push([method, stats.count, `₱${stats.revenue.toFixed(2)}`, `${percentage}%`]);
+    });
+  }
+
+  const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
+  summarySheet['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 12 }];
   XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
 
   // Sales Details sheet
   if (data.sales && data.sales.length > 0) {
     const salesData = [
-      ['Date', 'Receipt #', 'Cashier', 'Amount', 'Items Count'],
+      ['Date', 'Receipt #', 'Cashier', 'Payment Method', 'Amount', 'Items Count'],
       ...data.sales.map((sale: any) => [
         new Date(sale.createdAt).toLocaleString(),
         sale.saleNumber,
         sale.user.fullName,
+        sale.paymentMethod || 'CASH',
         sale.netAmount.toFixed(2),
         sale.saleItems.length,
       ]),
     ];
 
     const salesSheet = XLSX.utils.aoa_to_sheet(salesData);
-    salesSheet['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 12 }];
+    salesSheet['!cols'] = [{ wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 15 }, { wch: 12 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(workbook, salesSheet, 'Sales Details');
   }
 
