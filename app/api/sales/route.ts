@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate total
-    let netAmount = 0;
+    // Calculate totals
+    let totalAmount = 0;
     const saleItems = [];
 
     for (const item of items) {
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       }
 
       const subtotal = item.quantity * product.unitPrice;
-      netAmount += subtotal;
+      totalAmount += subtotal;
 
       saleItems.push({
         productId: product.id,
@@ -77,7 +77,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    netAmount = netAmount - (discount || 0) + (taxAmount || 0);
+    // Calculate net amount after discount and tax
+    const netAmount = totalAmount - (discount || 0) + (taxAmount || 0);
 
     // Generate sale number
     const date = new Date();
@@ -91,7 +92,8 @@ export async function POST(request: NextRequest) {
         data: {
           saleNumber,
           userId,
-          netAmount,
+          totalAmount,        // Total before discount/tax
+          netAmount,          // Final amount after discount/tax
           discount: discount || 0,
           taxAmount: taxAmount || 0,
           saleItems: {
