@@ -67,7 +67,9 @@
 - ✅ Supplier search
 
 #### 8. **Backup & Security**
-- ✅ **Database backup & restore** 🆕
+- ✅ **Automated daily database backups** 🆕
+- ✅ **Manual backup & restore** 🆕
+- ✅ **Backup status monitoring** 🆕
 - ✅ bcrypt password hashing
 - ✅ Role-based authorization
 - ✅ SQL injection protection (Prisma)
@@ -98,12 +100,16 @@
 - Item-level breakdown
 - Date and cost tracking
 
-### 💾 Database Backup & Restore
-- One-click database backup download
+### 💾 Automated Daily Backups
+- **Smart automated backup system**
+- Automatically creates backup once per day
+- Visual backup status display with color indicators
+- Last backup time tracking
+- Enable/disable automated backups
+- Manual backup option available
 - Upload backup to restore data
 - Automatic safety backup before restore
 - Warning system for destructive actions
-- Best practices documentation
 
 ---
 
@@ -229,7 +235,7 @@ psu-sales-inventory-system/
 │   │   ├── suppliers/         # Suppliers
 │   │   ├── reports/           # Reports
 │   │   ├── users/             # User Management
-│   │   └── settings/          # System Settings
+│   │   └── settings/          # System Settings & Backup
 │   └── login/                 # Authentication
 ├── components/ui/              # UI components
 ├── lib/                        # Utilities
@@ -310,7 +316,9 @@ psu-sales-inventory-system/
 - User search and filtering
 
 ### System Settings 🆕
-- **Database backup download**
+- **Automated daily backups**
+- **Backup status monitoring**
+- **Manual backup download**
 - **Restore from backup**
 - Security information
 - Best practices guide
@@ -369,11 +377,12 @@ psu-sales-inventory-system/
 
 ---
 
-## 🔔 Notifications
+## 🔔 Notifications & Monitoring
 
 - **Low Stock Alerts** - Dashboard widget showing products below reorder level
 - **Out of Stock** - Real-time tracking of depleted inventory
 - **Stock Validation** - Prevents overselling during checkout
+- **Backup Status** - Visual monitoring of last backup time with color indicators
 
 ---
 
@@ -384,7 +393,7 @@ psu-sales-inventory-system/
 ✅ **Data Integrity** - Automatic calculations and validations  
 ✅ **Security** - Role-based access and encrypted passwords  
 ✅ **Reporting** - Comprehensive analytics and export capabilities  
-✅ **Backup** - Database backup and restore functionality
+✅ **Backup** - Automated daily backups with restore functionality
 
 ---
 
@@ -443,6 +452,7 @@ This project is developed for educational purposes as part of the Advanced Datab
 
 **✅ Production Ready**  
 **✅ 100% Functional Requirements Complete**  
+**✅ Automated Daily Backups Active**  
 **✅ All Features Tested**  
 
 **Version:** 1.2.0  
