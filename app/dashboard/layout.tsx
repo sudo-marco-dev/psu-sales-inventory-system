@@ -14,6 +14,7 @@ import {
   Truck,
   Users,
   FileText,
+  Receipt,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -62,6 +63,7 @@ export default function DashboardLayout({
   const navigation = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'CASHIER', 'INVENTORY_CLERK'] },
     { name: 'POS (Sales)', path: '/dashboard/pos', icon: ShoppingCart, roles: ['ADMIN', 'CASHIER'] },
+    { name: 'Sales History', path: '/dashboard/sales', icon: Receipt, roles: ['ADMIN', 'CASHIER'] },
     { name: 'Products', path: '/dashboard/products', icon: Package, roles: ['ADMIN', 'INVENTORY_CLERK'] },
     { name: 'Purchases', path: '/dashboard/purchases', icon: Truck, roles: ['ADMIN', 'INVENTORY_CLERK'] },
     { name: 'Suppliers', path: '/dashboard/suppliers', icon: Users, roles: ['ADMIN', 'INVENTORY_CLERK'] },
