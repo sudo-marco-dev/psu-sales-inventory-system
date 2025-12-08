@@ -4,9 +4,16 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
   try {
     const suppliers = await prisma.supplier.findMany({
-      where: { isActive: true },
+      include: {
+        _count: {
+          select: {
+            purchases: true,
+          },
+        },
+      },
       orderBy: { companyName: 'asc' },
     });
+
     return NextResponse.json(suppliers);
   } catch (error) {
     console.error('Get suppliers error:', error);
@@ -36,6 +43,7 @@ export async function POST(request: NextRequest) {
         email: email || null,
         phone,
         address: address || null,
+        isActive: true,
       },
     });
 
