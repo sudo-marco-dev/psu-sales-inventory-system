@@ -1,18 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Database, Download, Upload, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Database, Download, Upload, Shield, AlertTriangle, CheckCircle, Clock, Calendar } from 'lucide-react';
 
 export default function SettingsPage() {
   const [backing, setBacking] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [lastBackup, setLastBackup] = useState<string | null>(null);
+  const [autoBackupEnabled, setAutoBackupEnabled] = useState(true);
 
-  const handleBackup = async () => {
-    setBacking(true);
+  useEffect(() => {
+    // Check last backup time
+    const lastBackupTime = localStorage.getItem('lastBackupTime');
+    if (lastBackupTime) {
+      setLastBackup(lastBackupTime);
+    }
+
+    // Check if auto backup is enabled
+    const autoBackup = localStorage.getItem('autoBackupEnabled');
+    if (autoBackup !== null) {
+      setAutoBackupEnabled(autoBackup === 'true');
+    }
+
+    // Check if daily backup is needed
+    checkAndCreateDailyBackup();
+  }, []);
+
+  const checkAndCreateDailyBackup = async () => {
+    if (!autoBackupEnabled) return;
+
+    const lastBackupTime = localStorage.getItem('lastBackupTime');
+    const today = new Date().toDateString();
+
+    // If no backup today, create one automatically
+    if (!lastBackupTime || new Date(lastBackupTime).toDateString() !== today) {
+      await createBackup(true); // Silent backup
+    }
+  };
+
+  const createBackup = async (silent = false) => {
+    if (!silent) setBacking(true);
     setMessage(null);
+    
     try {
       const res = await fetch('/api/backup/create', { method: 'POST' });
       
@@ -24,20 +56,32 @@ export default function SettingsPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `psu-database-backup-${new Date().toISOString().split('T')[0]}.db`;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+      a.download = `psu-database-backup-${timestamp}.db`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      setMessage({ type: 'success', text: 'Database backup created successfully!' });
+      // Update last backup time
+      const now = new Date().toISOString();
+      localStorage.setItem('lastBackupTime', now);
+      setLastBackup(now);
+
+      if (!silent) {
+        setMessage({ type: 'success', text: 'Database backup created successfully!' });
+      }
     } catch (error) {
       console.error('Backup error:', error);
-      setMessage({ type: 'error', text: 'Failed to create backup. Please try again.' });
+      if (!silent) {
+        setMessage({ type: 'error', text: 'Failed to create backup. Please try again.' });
+      }
     } finally {
-      setBacking(false);
+      if (!silent) setBacking(false);
     }
   };
+
+  const handleBackup = () => createBackup(false);
 
   const handleRestoreClick = () => {
     const input = document.createElement('input');
@@ -84,6 +128,47 @@ export default function SettingsPage() {
     input.click();
   };
 
+  const toggleAutoBackup = () => {
+    const newValue = !autoBackupEnabled;
+    setAutoBackupEnabled(newValue);
+    localStorage.setItem('autoBackupEnabled', newValue.toString());
+    setMessage({ 
+      type: 'success', 
+      text: `Automated daily backups ${newValue ? 'enabled' : 'disabled'}` 
+    });
+  };
+
+  const getBackupStatus = () => {
+    if (!lastBackup) return { text: 'No backup created yet', color: 'text-gray-500', icon: Clock };
+    
+    const backupDate = new Date(lastBackup);
+    const now = new Date();
+    const diffHours = Math.floor((now.getTime() - backupDate.getTime()) / (1000 * 60 * 60));
+    
+    if (diffHours < 24) {
+      return { 
+        text: `Last backup: ${backupDate.toLocaleString()}`, 
+        color: 'text-green-600', 
+        icon: CheckCircle 
+      };
+    } else if (diffHours < 48) {
+      return { 
+        text: `Last backup: ${backupDate.toLocaleString()}`, 
+        color: 'text-orange-600', 
+        icon: AlertTriangle 
+      };
+    } else {
+      return { 
+        text: `Last backup: ${backupDate.toLocaleString()} (Outdated)`, 
+        color: 'text-red-600', 
+        icon: AlertTriangle 
+      };
+    }
+  };
+
+  const backupStatus = getBackupStatus();
+  const StatusIcon = backupStatus.icon;
+
   return (
     <div className="space-y-6">
       <div>
@@ -109,12 +194,51 @@ export default function SettingsPage() {
         </Card>
       )}
 
+      {/* Backup Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Backup Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3">
+              <StatusIcon className={`h-5 w-5 ${backupStatus.color}`} />
+              <div>
+                <p className={`font-medium ${backupStatus.color}`}>{backupStatus.text}</p>
+                <p className="text-xs text-gray-500 mt-1">Automated daily backups: {autoBackupEnabled ? 'Enabled' : 'Disabled'}</p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={toggleAutoBackup}
+              className={autoBackupEnabled ? 'border-green-600 text-green-600' : 'border-gray-400'}
+            >
+              {autoBackupEnabled ? 'Enabled' : 'Disabled'}
+            </Button>
+          </div>
+
+          {autoBackupEnabled && (
+            <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <Calendar className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-900">
+                <p className="font-semibold mb-1">Automated Daily Backups Active</p>
+                <p>The system automatically creates a backup once per day. Backups are downloaded to your default download folder.</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Database Backup */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Database className="h-5 w-5" />
-            Database Backup & Restore
+            Manual Backup & Restore
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -122,7 +246,7 @@ export default function SettingsPage() {
           <div>
             <h3 className="font-semibold mb-2 flex items-center gap-2">
               <Download className="h-4 w-4" />
-              Create Backup
+              Create Backup Now
             </h3>
             <p className="text-sm text-gray-600 mb-4">
               Download a complete backup of your database. This includes all sales, products, purchases, suppliers, and users.
@@ -191,8 +315,8 @@ export default function SettingsPage() {
               <p className="text-gray-600">All database queries use Prisma ORM for safe parameterized queries.</p>
             </div>
             <div>
-              <h4 className="font-semibold mb-1">✅ Session Management</h4>
-              <p className="text-gray-600">User sessions are managed securely with local storage validation.</p>
+              <h4 className="font-semibold mb-1">✅ Automated Backups</h4>
+              <p className="text-gray-600">Daily automated backups help prevent data loss and ensure business continuity.</p>
             </div>
           </div>
         </CardContent>
@@ -207,7 +331,7 @@ export default function SettingsPage() {
           <ul className="space-y-2 text-sm text-gray-600">
             <li className="flex items-start gap-2">
               <span className="text-blue-600 font-bold">•</span>
-              <span><strong>Daily Backups:</strong> Create backups at the end of each business day.</span>
+              <span><strong>Automated Daily Backups:</strong> Enable automated backups to ensure daily protection.</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600 font-bold">•</span>
