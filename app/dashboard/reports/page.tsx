@@ -3,7 +3,15 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BarChart3, TrendingUp, TrendingDown, Package, DollarSign } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Package, DollarSign, Download, FileText } from 'lucide-react';
+import {
+  exportSalesReportToPDF,
+  exportSalesReportToExcel,
+  exportInventoryReportToPDF,
+  exportInventoryReportToExcel,
+  exportProfitLossToPDF,
+  exportProfitLossToExcel,
+} from '@/lib/export';
 
 export default function ReportsPage() {
   const [salesPeriod, setSalesPeriod] = useState('today');
@@ -13,6 +21,7 @@ export default function ReportsPage() {
   const [topProductsData, setTopProductsData] = useState<any>(null);
   const [profitLossData, setProfitLossData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAllReports();
@@ -36,6 +45,78 @@ export default function ReportsPage() {
       console.error('Failed to fetch reports:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportSalesReportPDF = async () => {
+    setExporting('sales-pdf');
+    try {
+      exportSalesReportToPDF(salesData, salesPeriod);
+    } catch (error) {
+      alert('Failed to export PDF');
+      console.error(error);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleExportSalesReportExcel = async () => {
+    setExporting('sales-excel');
+    try {
+      exportSalesReportToExcel(salesData, salesPeriod);
+    } catch (error) {
+      alert('Failed to export Excel');
+      console.error(error);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleExportInventoryPDF = async () => {
+    setExporting('inventory-pdf');
+    try {
+      exportInventoryReportToPDF(inventoryData);
+    } catch (error) {
+      alert('Failed to export PDF');
+      console.error(error);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleExportInventoryExcel = async () => {
+    setExporting('inventory-excel');
+    try {
+      exportInventoryReportToExcel(inventoryData);
+    } catch (error) {
+      alert('Failed to export Excel');
+      console.error(error);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleExportPLPDF = async () => {
+    setExporting('pl-pdf');
+    try {
+      exportProfitLossToPDF(profitLossData, plPeriod);
+    } catch (error) {
+      alert('Failed to export PDF');
+      console.error(error);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleExportPLExcel = async () => {
+    setExporting('pl-excel');
+    try {
+      exportProfitLossToExcel(profitLossData, plPeriod);
+    } catch (error) {
+      alert('Failed to export Excel');
+      console.error(error);
+    } finally {
+      setExporting(null);
     }
   };
 
@@ -77,7 +158,7 @@ export default function ReportsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-4 mb-6">
             <div>
               <p className="text-sm text-gray-500">Total Revenue</p>
               <p className="text-2xl font-bold text-green-600">₱{salesData?.totalRevenue.toFixed(2)}</p>
@@ -94,6 +175,28 @@ export default function ReportsPage() {
               <p className="text-sm text-gray-500">Average Sale</p>
               <p className="text-2xl font-bold">₱{salesData?.averageSale.toFixed(2)}</p>
             </div>
+          </div>
+
+          {/* Export Buttons */}
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportSalesReportPDF}
+              disabled={exporting === 'sales-pdf'}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              {exporting === 'sales-pdf' ? 'Exporting...' : 'Export as PDF'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportSalesReportExcel}
+              disabled={exporting === 'sales-excel'}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {exporting === 'sales-excel' ? 'Exporting...' : 'Export as Excel'}
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -121,7 +224,7 @@ export default function ReportsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-4 mb-6">
             <div>
               <p className="text-sm text-gray-500">Revenue</p>
               <p className="text-2xl font-bold text-green-600">₱{profitLossData?.totalRevenue.toFixed(2)}</p>
@@ -143,16 +246,60 @@ export default function ReportsPage() {
               </p>
             </div>
           </div>
+
+          {/* Export Buttons */}
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportPLPDF}
+              disabled={exporting === 'pl-pdf'}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              {exporting === 'pl-pdf' ? 'Exporting...' : 'Export as PDF'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportPLExcel}
+              disabled={exporting === 'pl-excel'}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {exporting === 'pl-excel' ? 'Exporting...' : 'Export as Excel'}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
       {/* Inventory Status */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Inventory Status
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Inventory Status
+            </CardTitle>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportInventoryPDF}
+                disabled={exporting === 'inventory-pdf'}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                {exporting === 'inventory-pdf' ? 'Exporting...' : 'Export PDF'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportInventoryExcel}
+                disabled={exporting === 'inventory-excel'}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {exporting === 'inventory-excel' ? 'Exporting...' : 'Export Excel'}
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4 mb-6">
