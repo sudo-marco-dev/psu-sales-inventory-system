@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BarChart3, TrendingUp, TrendingDown, Package, DollarSign, Download, FileText } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Package, DollarSign, Download, FileText, CreditCard } from 'lucide-react';
 import {
   exportSalesReportToPDF,
   exportSalesReportToExcel,
@@ -120,6 +120,16 @@ export default function ReportsPage() {
     }
   };
 
+  const getPaymentMethodColor = (method: string) => {
+    const colors: any = {
+      'CASH': 'bg-green-100 text-green-800',
+      'CARD': 'bg-blue-100 text-blue-800',
+      'GCASH': 'bg-purple-100 text-purple-800',
+      'PAYMAYA': 'bg-orange-100 text-orange-800',
+    };
+    return colors[method] || 'bg-gray-100 text-gray-800';
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -176,6 +186,32 @@ export default function ReportsPage() {
               <p className="text-2xl font-bold">₱{salesData?.averageSale.toFixed(2)}</p>
             </div>
           </div>
+
+          {/* Payment Methods Breakdown */}
+          {salesData?.paymentMethodStats && Object.keys(salesData.paymentMethodStats).length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                Payment Methods
+              </h3>
+              <div className="grid gap-3 md:grid-cols-4">
+                {Object.entries(salesData.paymentMethodStats).map(([method, stats]: [string, any]) => (
+                  <div key={method} className="p-3 border rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentMethodColor(method)}`}>
+                        {method}
+                      </span>
+                      <span className="text-sm font-medium">{stats.count} sales</span>
+                    </div>
+                    <p className="text-lg font-bold text-green-600">₱{stats.revenue.toFixed(2)}</p>
+                    <p className="text-xs text-gray-500">
+                      {((stats.revenue / salesData.totalRevenue) * 100).toFixed(1)}% of total
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Export Buttons */}
           <div className="flex gap-3">
