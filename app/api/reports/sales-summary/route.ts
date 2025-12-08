@@ -56,6 +56,17 @@ export async function GET(request: NextRequest) {
       salesByDay[date] = (salesByDay[date] || 0) + sale.netAmount;
     });
 
+    // Payment method breakdown
+    const paymentMethodStats: { [key: string]: { count: number; revenue: number } } = {};
+    sales.forEach(sale => {
+      const method = sale.paymentMethod || 'CASH';
+      if (!paymentMethodStats[method]) {
+        paymentMethodStats[method] = { count: 0, revenue: 0 };
+      }
+      paymentMethodStats[method].count++;
+      paymentMethodStats[method].revenue += sale.netAmount;
+    });
+
     return NextResponse.json({
       period,
       totalRevenue,
@@ -64,6 +75,7 @@ export async function GET(request: NextRequest) {
       averageSale,
       sales,
       salesByDay,
+      paymentMethodStats,
     });
   } catch (error) {
     console.error('Get sales summary error:', error);
