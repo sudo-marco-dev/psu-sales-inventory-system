@@ -1,268 +1,403 @@
-# PSU Sales and Inventory Management System
+# PSU Sales & Inventory Management System
 
-A complete Sales and Inventory Management System built with Next.js, Prisma, and SQLite for Palawan State University - ADS Final Project.
+**Palawan State University**  
+**Advanced Database Systems - Final Project**
 
-## ✨ Features Implemented
+> A comprehensive sales and inventory management system built with Next.js, TypeScript, and Prisma.
 
-### ✅ Authentication & Access Control
-- Secure login with username/password
-- Role-based access (Admin, Cashier, Inventory Clerk)
-- Session management with localStorage
-- Protected routes based on user roles
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/sudo-marco-dev/psu-sales-inventory-system)
+[![Status](https://img.shields.io/badge/status-production%20ready-success.svg)](https://github.com/sudo-marco-dev/psu-sales-inventory-system)
+[![Requirements](https://img.shields.io/badge/requirements-100%25-brightgreen.svg)](https://github.com/sudo-marco-dev/psu-sales-inventory-system)
 
-### ✅ Dashboard
-- Real-time key metrics (Total Products, Low Stock Alerts, Revenue, Sales Count)
-- Recent sales list with detailed information
-- Low stock alerts section
-- Role-based content display
-- Mobile-responsive design
+---
 
-### ✅ Product Management
-- View all products with detailed information
-- Search products by name or code
-- Display stock levels, prices, categories, suppliers
-- Low stock indicators with visual warnings
-- Category-based organization
+## ✨ Features
 
-### ✅ Point of Sale (POS)
-- Fast product search and selection
-- Shopping cart with real-time calculations
-- Quantity adjustments (+ / - buttons)
-- Stock validation (prevents overselling)
-- Automatic inventory updates on sale completion
-- Unique receipt number generation (SALE-YYYYMMDD-####)
-- Split-screen design for efficient workflow
+### ✅ 100% Functional Requirements Complete
 
-### ✅ Purchase/Restocking Management
-- Create purchase orders with multiple items
-- Select suppliers from dropdown
-- Add products with custom unit costs
-- Automatic stock level increments
-- Purchase order history with full details
-- Unique PO number generation (PO-YYYYMMDD-####)
-- Notes field for additional information
+#### 1. **Product & Inventory Management**
+- ✅ CRUD operations for products
+- ✅ Real-time stock level monitoring
+- ✅ Automatic inventory adjustment
+- ✅ **Low stock notifications on dashboard**
+- ✅ Product categorization
+- ✅ Search and filtering
 
-### ✅ Supplier Management
-- Add new suppliers with complete contact information
-- Store company name, contact person, phone, email, address
-- Search suppliers by name or contact person
-- Grid view with detailed supplier cards
-- Active/inactive status tracking
+#### 2. **Sales Transaction Processing**
+- ✅ Point of Sale (POS) interface
+- ✅ Shopping cart functionality
+- ✅ Automatic calculation (subtotal, tax, total)
+- ✅ **PDF receipt generation with payment method**
+- ✅ **Multiple payment methods** (Cash, Card, GCash, PayMaya)
+- ✅ Auto-print receipts
+- ✅ Change calculation for cash payments
 
-### ✅ Reports & Analytics
-- **Sales Summary**: Today, Week, Month views with revenue, sales count, items sold, average sale
-- **Profit & Loss**: Calculate revenue vs costs with profit margins
-- **Inventory Status**: Total products, low stock alerts, out of stock, inventory value
-- **Top Selling Products**: Ranked by quantity sold and revenue
-- **Slow Moving Products**: Identify products with low sales
-- **Low Stock Alerts**: Quick view of products needing restock
-- Period filtering for all reports
+#### 3. **Purchase & Restocking**
+- ✅ Purchase order creation
+- ✅ Automatic stock updates
+- ✅ Supplier integration
+- ✅ Purchase history tracking
 
-## 🚀 Quick Start
+#### 4. **Supplier Management**
+- ✅ Supplier database (CRUD)
+- ✅ Contact information management
+- ✅ **Transaction history per supplier** 🆕
+- ✅ Purchase count tracking
+- ✅ Total purchase amount per supplier
+
+#### 5. **Reports & Analytics**
+- ✅ Sales summaries (Daily/Weekly/Monthly)
+- ✅ Inventory status reports
+- ✅ Fast & slow-moving products
+- ✅ Profit & Loss statements
+- ✅ **Payment method analytics** 🆕
+- ✅ **Export to PDF & Excel**
+
+#### 6. **User Management**
+- ✅ Role-based access control (Admin, Cashier, Inventory Clerk)
+- ✅ **User CRUD interface** 🆕
+- ✅ Password encryption (bcrypt)
+- ✅ Activate/deactivate users
+- ✅ Search users
+
+#### 7. **Search & Filtering**
+- ✅ Product search by name/code/category
+- ✅ Sales search by receipt/cashier/payment method
+- ✅ Report filtering by date/period
+- ✅ Supplier search
+
+#### 8. **Backup & Security**
+- ✅ **Database backup & restore** 🆕
+- ✅ bcrypt password hashing
+- ✅ Role-based authorization
+- ✅ SQL injection protection (Prisma)
+- ✅ Secure session management
+
+---
+
+## 🆕 Latest Features (v1.2.0)
+
+### 💳 Payment Method Tracking
+- Select payment method at POS checkout
+- Payment displayed on receipts
+- Color-coded payment badges in sales history
+- Payment method analytics in reports
+- Search sales by payment method
+
+### 👥 User Management Interface
+- Complete admin dashboard for user management
+- Create, edit, delete users
+- Activate/deactivate accounts
+- Role assignment and management
+- Search and filter users
+
+### 📊 Supplier Transaction History
+- View all purchase orders per supplier
+- Total purchase count and amount
+- Expandable transaction details
+- Item-level breakdown
+- Date and cost tracking
+
+### 💾 Database Backup & Restore
+- One-click database backup download
+- Upload backup to restore data
+- Automatic safety backup before restore
+- Warning system for destructive actions
+- Best practices documentation
+
+---
+
+## 💻 Tech Stack
+
+### Frontend
+- **Next.js 14** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first CSS
+- **Shadcn/ui** - Beautiful UI components
+- **Lucide React** - Icon library
+
+### Backend
+- **Next.js API Routes** - Serverless functions
+- **Prisma** - Type-safe ORM
+- **SQLite** - Embedded database
+- **bcrypt** - Password encryption
+- **Node.js fs** - File system operations
+
+### Libraries
+- **jsPDF** - PDF generation
+- **xlsx** - Excel export
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ installed
-- Git installed
+- Node.js 18+ 
+- npm or yarn
 
-### Setup Instructions
+### Installation
 
 ```bash
-# 1. Navigate to your project folder
-cd C:\\Users\\marco\\Documents\\ADS\\ADS-final-project
-
-# 2. Clone the repository (if not already cloned)
+# Clone the repository
 git clone https://github.com/sudo-marco-dev/psu-sales-inventory-system.git
+
+# Navigate to project directory
 cd psu-sales-inventory-system
 
-# 3. Pull the latest changes
-git pull
-
-# 4. Install dependencies
+# Install dependencies
 npm install
 
-# 5. Install correct Prisma version (if needed)
-npm uninstall prisma @prisma/client
-npm install prisma@5.20.0 @prisma/client@5.20.0 --save-exact
+# Generate Prisma client
+npm run db:generate
 
-# 6. Set up the database
+# Push database schema
 npm run db:push
 
-# 7. Seed the database with sample data
+# Seed database with sample data
 npm run db:seed
 
-# 8. Start the development server
+# Start development server
 npm run dev
 ```
 
+### Access the Application
+
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 👤 Default User Accounts
+---
 
-| Role | Username | Password | Access |
-|------|----------|----------|--------|
-| Admin | `admin` | `admin123` | Full access to all features |
-| Cashier | `cashier` | `cashier123` | Dashboard, POS only |
-| Inventory Clerk | `clerk` | `clerk123` | Dashboard, Products, Purchases, Suppliers |
+## 🔐 Default Credentials
 
-## 📊 Tech Stack
+### Admin Account
+- **Username:** `admin`
+- **Password:** `admin123`
+- **Access:** Full system access
 
-- **Frontend**: Next.js 14 (App Router), React 18, TypeScript
-- **UI Components**: Tailwind CSS, shadcn/ui, Radix UI, Lucide Icons
-- **Backend**: Next.js API Routes
-- **Database**: SQLite with Prisma ORM 5.20.0
-- **Authentication**: Custom auth with bcryptjs
-- **State Management**: React Hooks (useState, useEffect)
+### Cashier Account
+- **Username:** `cashier`
+- **Password:** `cashier123`
+- **Access:** POS, Sales History
 
-### Why This Stack?
+### Inventory Clerk Account
+- **Username:** `clerk`
+- **Password:** `clerk123`
+- **Access:** Products, Purchases, Suppliers
 
-**Next.js 14 (App Router)**
-- ✅ Single framework for frontend + backend
-- ✅ Built-in API routes (no separate backend needed)
-- ✅ Server and client components for optimal performance
-- ✅ Fast development with hot reload
-- ✅ Easy deployment to Vercel
+---
 
-**SQLite + Prisma**
-- ✅ Zero configuration - no database server needed
-- ✅ Perfect for local development and testing
-- ✅ Type-safe database queries with Prisma Client
-- ✅ Easy migrations and schema management
-- ✅ Can migrate to PostgreSQL/MySQL for production
+## 📚 Available Scripts
 
-**Tailwind CSS + shadcn/ui**
-- ✅ Rapid UI development with utility classes
-- ✅ Pre-built accessible components
-- ✅ Consistent design system
-- ✅ Fully customizable and extendable
-- ✅ Mobile-first responsive design
+```bash
+# Development
+npm run dev          # Start dev server
+
+# Production
+npm run build        # Build for production
+npm start            # Start production server
+
+# Database
+npm run db:push      # Push schema to database
+npm run db:generate  # Generate Prisma client
+npm run db:studio    # Open Prisma Studio
+npm run db:seed      # Seed database
+
+# Code Quality
+npm run lint         # Run ESLint
+```
+
+---
 
 ## 📁 Project Structure
 
 ```
 psu-sales-inventory-system/
 ├── app/
-│   ├── api/                      # API routes
-│   │   ├── auth/login/           # Login endpoint
-│   │   ├── products/             # Products CRUD
-│   │   ├── sales/                # Sales transactions
-│   │   ├── purchases/            # Purchase orders
-│   │   ├── suppliers/            # Suppliers CRUD
-│   │   ├── categories/           # Categories
-│   │   ├── dashboard/            # Dashboard stats
-│   │   └── reports/              # Analytics APIs
-│   ├── dashboard/                # Protected pages
-│   │   ├── page.tsx              # Dashboard home
-│   │   ├── pos/                  # Point of Sale
-│   │   ├── products/             # Products management
-│   │   ├── purchases/            # Purchase orders
-│   │   ├── suppliers/            # Suppliers management
-│   │   ├── reports/              # Reports & Analytics
-│   │   └── layout.tsx            # Dashboard layout with sidebar
-│   ├── login/                    # Login page
-│   ├── layout.tsx                # Root layout
-│   └── globals.css               # Global styles
-├── components/
-│   └── ui/                       # shadcn/ui components
-│       ├── button.tsx
-│       ├── card.tsx
-│       ├── input.tsx
-│       └── label.tsx
-├── lib/
-│   ├── prisma.ts                 # Prisma client singleton
-│   ├── auth.ts                   # Auth helper functions
-│   └── utils.ts                  # Utility functions (cn)
+│   ├── api/                    # API routes
+│   │   ├── auth/
+│   │   ├── backup/            # Backup & restore APIs
+│   │   ├── products/
+│   │   ├── sales/
+│   │   ├── purchases/
+│   │   ├── suppliers/
+│   │   ├── users/
+│   │   └── reports/
+│   ├── dashboard/              # Dashboard pages
+│   │   ├── pos/               # Point of Sale
+│   │   ├── sales/             # Sales History
+│   │   ├── products/          # Products
+│   │   ├── purchases/         # Purchase Orders
+│   │   ├── suppliers/         # Suppliers
+│   │   ├── reports/           # Reports
+│   │   ├── users/             # User Management
+│   │   └── settings/          # System Settings
+│   └── login/                 # Authentication
+├── components/ui/              # UI components
+├── lib/                        # Utilities
+│   ├── export.ts              # PDF/Excel exports
+│   ├── receipt.ts             # Receipt generation
+│   └── prisma.ts              # Prisma client
 ├── prisma/
-│   ├── schema.prisma             # Database schema
-│   ├── seed.ts                   # Seed script
-│   └── dev.db                    # SQLite database (created after setup)
-├── package.json
-├── tsconfig.json
-├── tailwind.config.ts
-└── next.config.js
+│   ├── schema.prisma          # Database schema
+│   ├── seed.ts                # Seed data
+│   └── dev.db                 # SQLite database
+└── package.json
 ```
 
-## 🛠️ Database Commands
+---
 
-```bash
-# Push schema changes to database
-npm run db:push
+## 📊 Features Overview
 
-# Open Prisma Studio (visual database editor)
-npm run db:studio
+### Dashboard
+- Real-time statistics
+- Recent sales display
+- Low stock alerts
+- Today's revenue tracking
 
-# Generate Prisma Client
-npm run db:generate
+### Point of Sale (POS)
+- Product search and selection
+- Shopping cart management
+- **Multiple payment methods**
+- Receipt auto-printing
+- Change calculation
+- Stock validation
 
-# Seed database with sample data
-npm run db:seed
-```
+### Sales History
+- View all transactions
+- **Search by payment method**
+- Print/download receipts
+- Expandable item details
+- **Color-coded payment badges**
 
-## 📝 Sample Data
+### Product Management
+- CRUD operations
+- Stock level monitoring
+- Category organization
+- Supplier assignment
+- Low stock indicators
 
-The seed script creates:
-- **3 users**: Admin, Cashier, Inventory Clerk
-- **2 categories**: Electronics, Stationery
-- **1 supplier**: Tech Supplies Inc.
-- **4 products**: USB Flash Drive, Ballpen, Notebook, Computer Mouse
+### Purchase Management
+- Create purchase orders
+- Multi-item purchases
+- Automatic stock updates
+- Supplier tracking
 
-## 🔑 Access Control Matrix
+### Supplier Management
+- CRUD operations
+- Contact information
+- **Transaction history** 🆕
+- Purchase count tracking
+- Total purchase amounts
+
+### Reports & Analytics
+- **Sales Reports** (PDF/Excel)
+  - Daily, weekly, monthly summaries
+  - **Payment method breakdown** 🆕
+  - Sales trends and performance
+- **Inventory Reports** (PDF/Excel)
+  - Current stock levels
+  - Low stock alerts
+  - Inventory valuation
+- **Profit & Loss** (PDF/Excel)
+  - Revenue vs. costs
+  - Profit margins
+  - Financial summaries
+
+### User Management 🆕
+- Create/edit/delete users
+- Role assignment
+- Account activation/deactivation
+- Password management
+- User search and filtering
+
+### System Settings 🆕
+- **Database backup download**
+- **Restore from backup**
+- Security information
+- Best practices guide
+
+---
+
+## 👥 User Roles & Permissions
 
 | Feature | Admin | Cashier | Inventory Clerk |
 |---------|-------|---------|----------------|
 | Dashboard | ✅ | ✅ | ✅ |
 | POS (Sales) | ✅ | ✅ | ❌ |
+| Sales History | ✅ | ✅ | ❌ |
 | Products | ✅ | ❌ | ✅ |
 | Purchases | ✅ | ❌ | ✅ |
 | Suppliers | ✅ | ❌ | ✅ |
-| Reports & Analytics | ✅ | ❌ | ❌ |
+| Reports | ✅ | ❌ | ❌ |
+| Users | ✅ | ❌ | ❌ |
+| Settings | ✅ | ❌ | ❌ |
 
-## 🧑‍💻 Usage Guide
+---
 
-### Making a Sale (Cashier/Admin)
-1. Navigate to **POS (Sales)**
-2. Search for products in the left panel
-3. Click on products to add to cart
-4. Adjust quantities using +/- buttons
-5. Review total and click **Complete Sale**
-6. Stock automatically updates
+## 📦 Database Schema
 
-### Creating a Purchase Order (Admin/Clerk)
-1. Navigate to **Purchases**
-2. Click **New Purchase Order**
-3. Select a supplier
-4. Add products with quantities and unit costs
-5. Add optional notes
-6. Click **Create Purchase Order**
-7. Stock levels automatically increase
+### Models
+1. **User** - System users with role-based access
+2. **Category** - Product categories
+3. **Supplier** - Supplier information
+4. **Product** - Product catalog with inventory
+5. **Sale** - Sales transactions with payment methods
+6. **SaleItem** - Line items in sales
+7. **Purchase** - Purchase orders
+8. **PurchaseItem** - Line items in purchases
 
-### Managing Suppliers (Admin/Clerk)
-1. Navigate to **Suppliers**
-2. Click **Add Supplier**
-3. Fill in company information
-4. Submit form
-5. Search and view all suppliers
+### Relationships
+- Products belong to Categories and Suppliers
+- Sales have multiple SaleItems
+- Purchases have multiple PurchaseItems
+- All transactions track the User who created them
 
-### Viewing Reports (Admin)
-1. Navigate to **Reports**
-2. View sales summary (today/week/month)
-3. Check profit & loss analysis
-4. Review inventory status
-5. Identify top-selling products
-6. Find slow-moving inventory
+---
 
-## 🐛 Troubleshooting
+## 📝 Export Capabilities
+
+### PDF Exports
+- Thermal receipts (80mm format) with payment method
+- Sales summary reports with payment analytics
+- Inventory status reports
+- Profit & loss statements
+
+### Excel Exports
+- Multi-sheet workbooks
+- Sales data with payment methods
+- Inventory listings
+- Financial summaries
+
+---
+
+## 🔔 Notifications
+
+- **Low Stock Alerts** - Dashboard widget showing products below reorder level
+- **Out of Stock** - Real-time tracking of depleted inventory
+- **Stock Validation** - Prevents overselling during checkout
+
+---
+
+## 🎯 Project Goals
+
+✅ **Accurate Tracking** - Real-time inventory and sales monitoring  
+✅ **Efficiency** - Streamlined POS and inventory workflows  
+✅ **Data Integrity** - Automatic calculations and validations  
+✅ **Security** - Role-based access and encrypted passwords  
+✅ **Reporting** - Comprehensive analytics and export capabilities  
+✅ **Backup** - Database backup and restore functionality
+
+---
+
+## 🛠️ Troubleshooting
 
 ### Database Issues
-If you encounter database errors:
 ```bash
-# Delete the database and recreate
 rm prisma/dev.db
 npm run db:push
 npm run db:seed
 ```
 
 ### Prisma Version Issues
-If you see errors about datasource URLs or Prisma 7:
 ```bash
 npm uninstall prisma @prisma/client
 npm install prisma@5.20.0 @prisma/client@5.20.0 --save-exact
@@ -270,74 +405,48 @@ npm run db:generate
 ```
 
 ### Port Already in Use
-If port 3000 is busy:
 ```bash
-# Use a different port
 npm run dev -- -p 3001
 ```
 
-### Module Not Found
-```bash
-# Reinstall dependencies
-rm -rf node_modules package-lock.json
-npm install
-```
-
 ### Clear Browser Cache
-If UI doesn't update:
 - Press `Ctrl+Shift+R` (Windows/Linux) or `Cmd+Shift+R` (Mac)
-- Or clear browser cache and hard reload
 
-## 🚀 Deployment (Optional)
-
-### Deploy to Vercel
-1. Push code to GitHub
-2. Import repository on [vercel.com](https://vercel.com)
-3. Deploy automatically
-4. For production, migrate to PostgreSQL (Supabase/Neon)
-
-### Database Migration for Production
-To use PostgreSQL in production:
-```prisma
-// Update prisma/schema.prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-```
+---
 
 ## 📚 Documentation
 
+- [FEATURES.md](FEATURES.md) - Detailed feature documentation
+- [CHANGELOG.md](CHANGELOG.md) - Version history
 - [Next.js Docs](https://nextjs.org/docs)
 - [Prisma Docs](https://www.prisma.io/docs)
 - [Tailwind CSS](https://tailwindcss.com/docs)
 - [shadcn/ui](https://ui.shadcn.com)
-- [Radix UI](https://www.radix-ui.com/)
 
-## ✨ Future Enhancements
+---
 
-- [ ] User Management (CRUD for users)
-- [ ] PDF Export for reports and receipts
-- [ ] Excel export for inventory data
-- [ ] Email notifications for low stock
-- [ ] Barcode scanning support
-- [ ] Multi-currency support
-- [ ] Advanced filtering and sorting
-- [ ] Audit logs for all transactions
-- [ ] Product images
-- [ ] Receipt printing
+## 👨‍💻 Author
 
-## 🤝 Contributing
+**Marco**  
+Palawan State University  
+Advanced Database Systems - Final Project
 
-This is an academic project for ADS Final Project. Feel free to fork and modify for your own educational purposes.
+---
 
 ## 📄 License
 
-MIT License - Free to use for educational purposes.
+This project is developed for educational purposes as part of the Advanced Database Systems course at Palawan State University.
 
-## 👥 Team
+---
 
-**Palawan State University** - ADS Final Project 2025
+## ✨ Status
+
+**✅ Production Ready**  
+**✅ 100% Functional Requirements Complete**  
+**✅ All Features Tested**  
+
+**Version:** 1.2.0  
+**Last Updated:** December 8, 2025
 
 ---
 
