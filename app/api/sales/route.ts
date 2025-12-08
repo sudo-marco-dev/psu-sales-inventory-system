@@ -18,7 +18,7 @@ export async function GET() {
         },
       },
       orderBy: { createdAt: 'desc' },
-      take: 50,
+      take: 100,
     });
 
     return NextResponse.json(sales);
@@ -34,13 +34,19 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, items, discount = 0, taxAmount = 0 } = body;
+    const { userId, items, discount, taxAmount } = body;
 
-    // Calculate totals
-    let totalAmount = 0;
+    if (!userId || !items || items.length === 0) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Calculate total
+    let netAmount = 0;
     const saleItems = [];
 
-    // Validate stock and calculate totals
     for (const item of items) {
       const product = await prisma.product.findUnique({
         where: { id: item.productId },
@@ -60,8 +66,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const subtotal = product.unitPrice * item.quantity;
-      totalAmount += subtotal;
+      const subtotal = item.quantity * product.unitPrice;
+      netAmount += subtotal;
 
       saleItems.push({
         productId: product.id,
@@ -71,7 +77,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const netAmount = totalAmount + taxAmount - discount;
+    netAmount = netAmount - (discount || 0) + (taxAmount || 0);
 
     // Generate sale number
     const date = new Date();
@@ -85,11 +91,9 @@ export async function POST(request: NextRequest) {
         data: {
           saleNumber,
           userId,
-          totalAmount,
-          taxAmount,
-          discount,
           netAmount,
-          paymentMethod: 'CASH',
+          discount: discount || 0,
+          taxAmount: taxAmount || 0,
           saleItems: {
             create: saleItems,
           },
@@ -108,7 +112,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Update stock levels
+      // Update stock levels (reduce inventory)
       for (const item of items) {
         await tx.product.update({
           where: { id: item.productId },
