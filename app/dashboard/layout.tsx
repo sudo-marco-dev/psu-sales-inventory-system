@@ -16,6 +16,7 @@ import {
   FileText,
   Receipt,
   UserCog,
+  Settings,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -70,6 +71,7 @@ export default function DashboardLayout({
     { name: 'Suppliers', path: '/dashboard/suppliers', icon: Users, roles: ['ADMIN', 'INVENTORY_CLERK'] },
     { name: 'Reports', path: '/dashboard/reports', icon: FileText, roles: ['ADMIN'] },
     { name: 'Users', path: '/dashboard/users', icon: UserCog, roles: ['ADMIN'] },
+    { name: 'Settings', path: '/dashboard/settings', icon: Settings, roles: ['ADMIN'] },
   ];
 
   const filteredNav = navigation.filter(item => item.roles.includes(user.role));
