@@ -34,7 +34,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, items, discount, taxAmount } = body;
+    const { userId, items, discount, taxAmount, paymentMethod } = body;
 
     if (!userId || !items || items.length === 0) {
       return NextResponse.json(
@@ -96,6 +96,7 @@ export async function POST(request: NextRequest) {
           netAmount,          // Final amount after discount/tax
           discount: discount || 0,
           taxAmount: taxAmount || 0,
+          paymentMethod: paymentMethod || 'CASH',  // Track payment method
           saleItems: {
             create: saleItems,
           },
