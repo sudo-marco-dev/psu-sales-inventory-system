@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Eye, Download, Printer } from 'lucide-react';
+import { Search, Eye, Download, Printer, CreditCard } from 'lucide-react';
 import { generateReceiptPDF, printReceiptDirect } from '@/lib/receipt';
 
 interface Sale {
@@ -12,6 +12,8 @@ interface Sale {
   saleNumber: string;
   netAmount: number;
   taxAmount: number;
+  discount: number;
+  paymentMethod: string;
   createdAt: string;
   user: { fullName: string };
   saleItems: Array<{
@@ -38,7 +40,8 @@ export default function SalesPage() {
     const filtered = sales.filter(
       (sale) =>
         sale.saleNumber.toLowerCase().includes(search.toLowerCase()) ||
-        sale.user.fullName.toLowerCase().includes(search.toLowerCase())
+        sale.user.fullName.toLowerCase().includes(search.toLowerCase()) ||
+        sale.paymentMethod.toLowerCase().includes(search.toLowerCase())
     );
     setFilteredSales(filtered);
   }, [search, sales]);
@@ -65,6 +68,20 @@ export default function SalesPage() {
     generateReceiptPDF(sale);
   };
 
+  const getPaymentMethodIcon = (method: string) => {
+    return <CreditCard className="h-4 w-4" />;
+  };
+
+  const getPaymentMethodBadge = (method: string) => {
+    const colors: any = {
+      'CASH': 'bg-green-100 text-green-800',
+      'CARD': 'bg-blue-100 text-blue-800',
+      'GCASH': 'bg-purple-100 text-purple-800',
+      'PAYMAYA': 'bg-orange-100 text-orange-800',
+    };
+    return colors[method] || 'bg-gray-100 text-gray-800';
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -86,7 +103,7 @@ export default function SalesPage() {
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search by receipt number or cashier name..."
+              placeholder="Search by receipt number, cashier name, or payment method..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -112,7 +129,12 @@ export default function SalesPage() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold">{sale.saleNumber}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-bold">{sale.saleNumber}</h3>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentMethodBadge(sale.paymentMethod)}`}>
+                        {sale.paymentMethod}
+                      </span>
+                    </div>
                     <p className="text-sm text-gray-500">
                       {new Date(sale.createdAt).toLocaleString()}
                     </p>
@@ -157,8 +179,14 @@ export default function SalesPage() {
                 <div className="space-y-1 mb-4 pb-4 border-b">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal:</span>
-                    <span>₱{(sale.netAmount - sale.taxAmount).toFixed(2)}</span>
+                    <span>₱{(sale.netAmount - sale.taxAmount + sale.discount).toFixed(2)}</span>
                   </div>
+                  {sale.discount > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Discount:</span>
+                      <span className="text-red-600">-₱{sale.discount.toFixed(2)}</span>
+                    </div>
+                  )}
                   {sale.taxAmount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>Tax:</span>

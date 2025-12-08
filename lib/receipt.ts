@@ -43,6 +43,11 @@ export const generateReceiptPDF = (sale: any) => {
   yPosition += 5;
 
   leftText(`Cashier: ${sale.user.fullName}`, yPosition);
+  yPosition += 5;
+
+  // Payment method
+  const paymentMethod = sale.paymentMethod || 'CASH';
+  leftText(`Payment: ${paymentMethod}`, yPosition);
   yPosition += 7;
 
   // Separator
@@ -99,6 +104,12 @@ export const generateReceiptPDF = (sale: any) => {
   if (sale.taxAmount > 0) {
     leftText('Tax:', yPosition);
     rightText(`₱${sale.taxAmount.toFixed(2)}`, yPosition);
+    yPosition += 5;
+  }
+
+  if (sale.discount > 0) {
+    leftText('Discount:', yPosition);
+    rightText(`-₱${sale.discount.toFixed(2)}`, yPosition);
     yPosition += 5;
   }
 
@@ -170,6 +181,11 @@ export const printReceiptDirect = (sale: any) => {
   yPosition += 5;
 
   leftText(`Cashier: ${sale.user.fullName}`, yPosition);
+  yPosition += 5;
+
+  // Payment method
+  const paymentMethod = sale.paymentMethod || 'CASH';
+  leftText(`Payment: ${paymentMethod}`, yPosition);
   yPosition += 7;
 
   doc.setDrawColor(0);
@@ -221,6 +237,12 @@ export const printReceiptDirect = (sale: any) => {
   if (sale.taxAmount > 0) {
     leftText('Tax:', yPosition);
     rightText(`₱${sale.taxAmount.toFixed(2)}`, yPosition);
+    yPosition += 5;
+  }
+
+  if (sale.discount > 0) {
+    leftText('Discount:', yPosition);
+    rightText(`-₱${sale.discount.toFixed(2)}`, yPosition);
     yPosition += 5;
   }
 
