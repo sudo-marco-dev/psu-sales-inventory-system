@@ -17,7 +17,6 @@ import {
   Receipt,
   UserCog,
   Settings,
-  UsersRound,
   Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -68,7 +67,7 @@ export default function DashboardLayout({
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'CASHIER', 'INVENTORY_CLERK'] },
     { name: 'POS (Sales)', path: '/dashboard/pos', icon: ShoppingCart, roles: ['ADMIN', 'CASHIER'] },
     { name: 'Sales History', path: '/dashboard/sales', icon: Receipt, roles: ['ADMIN', 'CASHIER'] },
-    { name: 'Customers', path: '/dashboard/customers', icon: UsersRound, roles: ['ADMIN', 'CASHIER'] },
+    { name: 'Customers', path: '/dashboard/customers', icon: UserIcon, roles: ['ADMIN', 'CASHIER'] },
     { name: 'Discounts', path: '/dashboard/discounts', icon: Tag, roles: ['ADMIN'] },
     { name: 'Products', path: '/dashboard/products', icon: Package, roles: ['ADMIN', 'INVENTORY_CLERK'] },
     { name: 'Purchases', path: '/dashboard/purchases', icon: Truck, roles: ['ADMIN', 'INVENTORY_CLERK'] },
