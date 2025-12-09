@@ -12,6 +12,9 @@
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "5.20.0",
     "@radix-ui/react-label": "^2.1.0",
