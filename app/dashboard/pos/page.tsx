@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ShoppingCart, Search, Plus, Minus, Trash2, DollarSign } from 'lucide-react';
+import { ShoppingCart, Search, Plus, Minus, Trash2, DollarSign, Tag } from 'lucide-react';
 import { generateReceiptPDF, printReceiptDirect } from '@/lib/receipt';
 
 interface Product {
@@ -20,6 +20,15 @@ interface CartItem extends Product {
   quantity: number;
 }
 
+interface Discount {
+  id: string;
+  code: string;
+  name: string;
+  discountType: string;
+  discountValue: number;
+  discountAmount: number;
+}
+
 export default function POSPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -29,6 +38,12 @@ export default function POSPage() {
   const [paymentMethod, setPaymentMethod] = useState('CASH');
   const [receivedAmount, setReceivedAmount] = useState('');
   const [showPayment, setShowPayment] = useState(false);
+  
+  // Discount states
+  const [discountCode, setDiscountCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<Discount | null>(null);
+  const [discountLoading, setDiscountLoading] = useState(false);
+  const [discountError, setDiscountError] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -86,9 +101,53 @@ export default function POSPage() {
     setCart(cart.filter((item) => item.id !== id));
   };
 
+  // Apply discount code
+  const applyDiscount = async () => {
+    if (!discountCode.trim()) {
+      setDiscountError('Please enter a discount code');
+      return;
+    }
+
+    setDiscountLoading(true);
+    setDiscountError('');
+
+    try {
+      const res = await fetch('/api/discounts/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: discountCode.toUpperCase(),
+          totalAmount: subtotal,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.valid) {
+        setAppliedDiscount(data.discount);
+        setDiscountError('');
+      } else {
+        setDiscountError(data.error || 'Invalid discount code');
+        setAppliedDiscount(null);
+      }
+    } catch (error) {
+      setDiscountError('Failed to validate discount code');
+      setAppliedDiscount(null);
+    } finally {
+      setDiscountLoading(false);
+    }
+  };
+
+  const removeDiscount = () => {
+    setAppliedDiscount(null);
+    setDiscountCode('');
+    setDiscountError('');
+  };
+
   const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const discountAmount = appliedDiscount ? appliedDiscount.discountAmount : 0;
   const tax = 0;
-  const total = subtotal + tax;
+  const total = subtotal - discountAmount + tax;
   const change = receivedAmount ? parseFloat(receivedAmount) - total : 0;
 
   const handleCheckout = () => {
@@ -118,7 +177,7 @@ export default function POSPage() {
             productId: item.id,
             quantity: item.quantity,
           })),
-          discount: 0,
+          discount: discountAmount,
           taxAmount: tax,
           paymentMethod,
         }),
@@ -130,11 +189,14 @@ export default function POSPage() {
         // Auto-print receipt
         printReceiptDirect(sale);
         
-        // Reset
+        // Reset everything
         setCart([]);
         setReceivedAmount('');
         setShowPayment(false);
         setPaymentMethod('CASH');
+        setAppliedDiscount(null);
+        setDiscountCode('');
+        setDiscountError('');
         fetchProducts();
         
         alert('Sale completed successfully!');
@@ -258,11 +320,68 @@ export default function POSPage() {
                     ))}
                   </div>
 
+                  {/* Discount Code Section */}
+                  {!appliedDiscount ? (
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Tag className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-900">Have a discount code?</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter code"
+                          value={discountCode}
+                          onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                          className="text-sm"
+                          disabled={discountLoading}
+                        />
+                        <Button
+                          size="sm"
+                          onClick={applyDiscount}
+                          disabled={discountLoading}
+                          className="whitespace-nowrap"
+                        >
+                          {discountLoading ? 'Checking...' : 'Apply'}
+                        </Button>
+                      </div>
+                      {discountError && (
+                        <p className="text-xs text-red-600 mt-1">{discountError}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <Tag className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-900">{appliedDiscount.name}</span>
+                        </div>
+                        <button
+                          onClick={removeDiscount}
+                          className="text-red-600 hover:text-red-700 text-sm"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <p className="text-xs text-green-700">Code: {appliedDiscount.code}</p>
+                      <p className="text-sm font-bold text-green-600 mt-1">
+                        {appliedDiscount.discountType === 'PERCENTAGE'
+                          ? `${appliedDiscount.discountValue}% OFF`
+                          : `₱${appliedDiscount.discountValue} OFF`}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="border-t pt-4 space-y-2">
                     <div className="flex justify-between">
                       <span>Subtotal:</span>
                       <span>₱{subtotal.toFixed(2)}</span>
                     </div>
+                    {appliedDiscount && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Discount:</span>
+                        <span>-₱{discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span>Tax:</span>
                       <span>₱{tax.toFixed(2)}</span>
