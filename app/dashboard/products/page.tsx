@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { PlusCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -46,6 +48,14 @@ export default function ProductsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Products</h1>
           <p className="text-gray-500 mt-1">Manage your inventory</p>
         </div>
+        <div>
+          <Link href="/dashboard/products/add">
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Item
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Search */}
@@ -81,7 +91,7 @@ export default function ProductsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
-            <Card key={product.id}>
+            <Card key={product.id} className="transition-transform duration-200">
               <CardHeader>
                 <CardTitle className="text-lg">{product.name}</CardTitle>
                 <p className="text-sm text-gray-500">{product.code}</p>
