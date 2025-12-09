@@ -48,21 +48,47 @@ export async function PUT(
       isActive,
     } = body;
 
+    // Validation
+    if (!code || !name || !discountValue || !startDate || !endDate) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Check if code already exists for another discount
+    const existing = await prisma.discount.findFirst({
+      where: {
+        code: code.toUpperCase(),
+        NOT: {
+          id: params.id,
+        },
+      },
+    });
+
+    if (existing) {
+      return NextResponse.json(
+        { error: 'Discount code already exists' },
+        { status: 400 }
+      );
+    }
+
+    // Update discount
     const discount = await prisma.discount.update({
       where: { id: params.id },
       data: {
-        code,
+        code: code.toUpperCase(),
         name,
         description: description || null,
         discountType,
-        discountValue: discountValue ? parseFloat(discountValue) : undefined,
-        minPurchase: minPurchase !== undefined ? parseFloat(minPurchase) : undefined,
+        discountValue: parseFloat(discountValue),
+        minPurchase: parseFloat(minPurchase || '0'),
         maxDiscount: maxDiscount ? parseFloat(maxDiscount) : null,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        usageLimit: usageLimit !== undefined ? (usageLimit ? parseInt(usageLimit) : null) : undefined,
-        applicableFor: applicableFor || undefined,
-        isActive: isActive !== undefined ? isActive : undefined,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        usageLimit: usageLimit ? parseInt(usageLimit) : null,
+        applicableFor: applicableFor || 'ALL',
+        isActive: isActive !== false,
       },
     });
 
@@ -81,6 +107,18 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Check if discount is used in any sales
+    const usedInSales = await prisma.saleDiscount.findFirst({
+      where: { discountId: params.id },
+    });
+
+    if (usedInSales) {
+      return NextResponse.json(
+        { error: 'Cannot delete discount that has been used in sales. You can deactivate it instead.' },
+        { status: 400 }
+      );
+    }
+
     await prisma.discount.delete({
       where: { id: params.id },
     });
