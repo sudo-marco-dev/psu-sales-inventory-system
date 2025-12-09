@@ -11,6 +11,12 @@ export async function GET() {
             username: true,
           },
         },
+        customer: {
+          select: {
+            name: true,
+            customerNumber: true,
+          },
+        },
         saleItems: {
           include: {
             product: true,
@@ -34,7 +40,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, items, discount, taxAmount, paymentMethod } = body;
+    const { userId, items, discount, taxAmount, paymentMethod, customerId } = body;
 
     if (!userId || !items || items.length === 0) {
       return NextResponse.json(
@@ -92,11 +98,12 @@ export async function POST(request: NextRequest) {
         data: {
           saleNumber,
           userId,
+          customerId: customerId || null,  // Optional customer
           totalAmount,        // Total before discount/tax
           netAmount,          // Final amount after discount/tax
-          discount: discount || 0,
+          discountAmount: discount || 0,   // Updated field name
           taxAmount: taxAmount || 0,
-          paymentMethod: paymentMethod || 'CASH',  // Track payment method
+          paymentMethod: paymentMethod || 'CASH',
           saleItems: {
             create: saleItems,
           },
@@ -110,6 +117,12 @@ export async function POST(request: NextRequest) {
           user: {
             select: {
               fullName: true,
+            },
+          },
+          customer: {
+            select: {
+              name: true,
+              customerNumber: true,
             },
           },
         },
