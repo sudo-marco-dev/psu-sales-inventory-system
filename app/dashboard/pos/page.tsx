@@ -178,6 +178,7 @@ export default function POSPage() {
             quantity: item.quantity,
           })),
           discount: discountAmount,
+          discountId: appliedDiscount?.id || null,  // Pass discount ID for tracking
           taxAmount: tax,
           paymentMethod,
         }),
