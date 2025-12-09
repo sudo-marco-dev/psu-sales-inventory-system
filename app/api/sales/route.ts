@@ -22,6 +22,11 @@ export async function GET() {
             product: true,
           },
         },
+        discounts: {
+          include: {
+            discount: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
       take: 100,
@@ -40,7 +45,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, items, discount, taxAmount, paymentMethod, customerId } = body;
+    const { userId, items, discount, taxAmount, paymentMethod, customerId, discountId } = body;
 
     if (!userId || !items || items.length === 0) {
       return NextResponse.json(
@@ -98,10 +103,10 @@ export async function POST(request: NextRequest) {
         data: {
           saleNumber,
           userId,
-          customerId: customerId || null,  // Optional customer
-          totalAmount,        // Total before discount/tax
-          netAmount,          // Final amount after discount/tax
-          discountAmount: discount || 0,   // Updated field name
+          customerId: customerId || null,
+          totalAmount,
+          netAmount,
+          discountAmount: discount || 0,
           taxAmount: taxAmount || 0,
           paymentMethod: paymentMethod || 'CASH',
           saleItems: {
@@ -128,13 +133,34 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Update stock levels (reduce inventory)
+      // Update stock levels
       for (const item of items) {
         await tx.product.update({
           where: { id: item.productId },
           data: {
             stockLevel: {
               decrement: item.quantity,
+            },
+          },
+        });
+      }
+
+      // If discount was applied, create SaleDiscount record and increment usage
+      if (discountId && discount > 0) {
+        await tx.saleDiscount.create({
+          data: {
+            saleId: newSale.id,
+            discountId: discountId,
+            discountAmount: discount,
+          },
+        });
+
+        // Increment discount usage count
+        await tx.discount.update({
+          where: { id: discountId },
+          data: {
+            usageCount: {
+              increment: 1,
             },
           },
         });
