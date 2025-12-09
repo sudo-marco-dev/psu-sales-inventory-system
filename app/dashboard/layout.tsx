@@ -18,6 +18,7 @@ import {
   UserCog,
   Settings,
   UsersRound,
+  Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -68,6 +69,7 @@ export default function DashboardLayout({
     { name: 'POS (Sales)', path: '/dashboard/pos', icon: ShoppingCart, roles: ['ADMIN', 'CASHIER'] },
     { name: 'Sales History', path: '/dashboard/sales', icon: Receipt, roles: ['ADMIN', 'CASHIER'] },
     { name: 'Customers', path: '/dashboard/customers', icon: UsersRound, roles: ['ADMIN', 'CASHIER'] },
+    { name: 'Discounts', path: '/dashboard/discounts', icon: Tag, roles: ['ADMIN'] },
     { name: 'Products', path: '/dashboard/products', icon: Package, roles: ['ADMIN', 'INVENTORY_CLERK'] },
     { name: 'Purchases', path: '/dashboard/purchases', icon: Truck, roles: ['ADMIN', 'INVENTORY_CLERK'] },
     { name: 'Suppliers', path: '/dashboard/suppliers', icon: Users, roles: ['ADMIN', 'INVENTORY_CLERK'] },
@@ -101,7 +103,7 @@ export default function DashboardLayout({
           </button>
         </div>
 
-        <div className="p-4">
+        <div className="p-4 overflow-y-auto h-[calc(100vh-8rem)]">
           <div className="flex items-center gap-3 px-4 py-3 mb-6 bg-slate-800 rounded-lg">
             <div className="p-2 bg-blue-600 rounded-full">
               <UserIcon size={20} className="text-white" />
