@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ShoppingCart, Search, Plus, Minus, Trash2, DollarSign } from 'lucide-react';
+import { ShoppingCart, Search, Plus, Minus, Trash2, DollarSign, Scan, X } from 'lucide-react';
 import { generateReceiptPDF, printReceiptDirect } from '@/lib/receipt';
 
 interface Product {
@@ -29,10 +29,132 @@ export default function POSPage() {
   const [paymentMethod, setPaymentMethod] = useState('CASH');
   const [receivedAmount, setReceivedAmount] = useState('');
   const [showPayment, setShowPayment] = useState(false);
+  const [barcodeScannerActive, setBarcodeScannerActive] = useState(true);
+  const [scannedCode, setScannedCode] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const barcodeBufferRef = useRef('');
+  const barcodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetchProducts();
   }, [search]);
+
+  // Barcode Scanner Support with Edge Cases
+  useEffect(() => {
+    if (!barcodeScannerActive) return;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore if user is typing in input fields
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+        return;
+      }
+
+      // Ignore modifier keys
+      if (e.ctrlKey || e.metaKey || e.altKey) {
+        return;
+      }
+
+      // Clear previous timeout
+      if (barcodeTimeoutRef.current) {
+        clearTimeout(barcodeTimeoutRef.current);
+      }
+
+      // Add character to buffer
+      if (e.key === 'Enter') {
+        // Barcode complete - process it
+        if (barcodeBufferRef.current.length >= 3) {
+          processBarcodeScanner(barcodeBufferRef.current);
+        }
+        barcodeBufferRef.current = '';
+      } else if (e.key.length === 1) {
+        // Single character - add to buffer
+        barcodeBufferRef.current += e.key;
+      }
+
+      // Auto-clear buffer after 100ms of inactivity
+      barcodeTimeoutRef.current = setTimeout(() => {
+        barcodeBufferRef.current = '';
+      }, 100);
+    };
+
+    window.addEventListener('keypress', handleKeyPress);
+    return () => {
+      window.removeEventListener('keypress', handleKeyPress);
+      if (barcodeTimeoutRef.current) {
+        clearTimeout(barcodeTimeoutRef.current);
+      }
+    };
+  }, [barcodeScannerActive, products]);
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F2 - Focus search
+      if (e.key === 'F2') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      // F4 - Toggle barcode scanner
+      if (e.key === 'F4') {
+        e.preventDefault();
+        setBarcodeScannerActive(!barcodeScannerActive);
+      }
+      // F9 - Checkout
+      if (e.key === 'F9' && cart.length > 0 && !showPayment) {
+        e.preventDefault();
+        handleCheckout();
+      }
+      // Esc - Clear cart or cancel payment
+      if (e.key === 'Escape') {
+        if (showPayment) {
+          setShowPayment(false);
+          setReceivedAmount('');
+        } else if (cart.length > 0) {
+          if (confirm('Clear entire cart?')) {
+            setCart([]);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [cart, showPayment, barcodeScannerActive]);
+
+  const processBarcodeScanner = async (code: string) => {
+    setScannedCode(code);
+    
+    // Search for product by code
+    const product = products.find(p => 
+      p.code.toUpperCase() === code.toUpperCase()
+    );
+
+    if (product) {
+      addToCart(product);
+      // Visual feedback
+      setTimeout(() => setScannedCode(''), 1000);
+    } else {
+      // Product not found - try fetching
+      try {
+        const res = await fetch(`/api/products?search=${code}`);
+        const data = await res.json();
+        const foundProduct = data.find((p: Product) => 
+          p.code.toUpperCase() === code.toUpperCase() && p.stockLevel > 0
+        );
+
+        if (foundProduct) {
+          addToCart(foundProduct);
+          setProducts([...products, foundProduct]);
+        } else {
+          alert(`Product not found: ${code}`);
+        }
+      } catch (error) {
+        alert('Failed to search product');
+      }
+      setTimeout(() => setScannedCode(''), 2000);
+    }
+  };
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -57,7 +179,7 @@ export default function POSPage() {
             : item
         ));
       } else {
-        alert('Not enough stock');
+        alert(`Insufficient stock for ${product.name}. Only ${product.stockLevel} available.`);
       }
     } else {
       setCart([...cart, { ...product, quantity: 1 }]);
@@ -71,9 +193,10 @@ export default function POSPage() {
           if (item.id === id) {
             const newQty = item.quantity + delta;
             if (newQty > item.stockLevel) {
-              alert('Not enough stock');
+              alert(`Not enough stock. Maximum: ${item.stockLevel}`);
               return item;
             }
+            if (newQty < 1) return item; // Will be filtered out
             return { ...item, quantity: newQty };
           }
           return item;
@@ -89,7 +212,7 @@ export default function POSPage() {
   const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const tax = 0;
   const total = subtotal + tax;
-  const change = receivedAmount ? parseFloat(receivedAmount) - total : 0;
+  const change = receivedAmount ? Math.max(0, parseFloat(receivedAmount) - total) : 0;
 
   const handleCheckout = () => {
     if (cart.length === 0) {
@@ -100,14 +223,33 @@ export default function POSPage() {
   };
 
   const processSale = async () => {
-    if (paymentMethod === 'CASH' && (!receivedAmount || parseFloat(receivedAmount) < total)) {
-      alert('Insufficient payment amount');
+    // Validation
+    if (cart.length === 0) {
+      alert('Cart is empty');
       return;
+    }
+
+    if (paymentMethod === 'CASH') {
+      if (!receivedAmount || receivedAmount.trim() === '') {
+        alert('Please enter amount received');
+        return;
+      }
+      const received = parseFloat(receivedAmount);
+      if (isNaN(received) || received < total) {
+        alert(`Insufficient payment. Total: ₱${total.toFixed(2)}, Received: ₱${received.toFixed(2)}`);
+        return;
+      }
     }
 
     setProcessing(true);
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      if (!user.id) {
+        alert('User session expired. Please login again.');
+        window.location.href = '/login';
+        return;
+      }
       
       const res = await fetch('/api/sales', {
         method: 'POST',
@@ -124,26 +266,30 @@ export default function POSPage() {
         }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        const sale = await res.json();
-        
         // Auto-print receipt
-        printReceiptDirect(sale);
+        try {
+          printReceiptDirect(data);
+        } catch (printError) {
+          console.error('Print error:', printError);
+          // Continue even if print fails
+        }
         
-        // Reset
+        // Reset everything
         setCart([]);
         setReceivedAmount('');
         setShowPayment(false);
         setPaymentMethod('CASH');
         fetchProducts();
         
-        alert('Sale completed successfully!');
+        alert(`Sale completed! Change: ₱${change.toFixed(2)}`);
       } else {
-        const error = await res.json();
-        alert(error.error || 'Failed to create sale');
+        alert(data.error || 'Failed to create sale');
       }
     } catch (error) {
-      alert('Failed to create sale');
+      alert('Failed to create sale. Please try again.');
       console.error(error);
     } finally {
       setProcessing(false);
@@ -152,9 +298,27 @@ export default function POSPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Point of Sale</h1>
-        <p className="text-gray-500 mt-1">Process sales transactions</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Point of Sale</h1>
+          <p className="text-gray-500 mt-1">Process sales transactions</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {scannedCode && (
+            <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-md text-sm font-medium animate-pulse">
+              Scanned: {scannedCode}
+            </div>
+          )}
+          <Button
+            variant={barcodeScannerActive ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setBarcodeScannerActive(!barcodeScannerActive)}
+            title="Toggle Barcode Scanner (F4)"
+          >
+            <Scan className="h-4 w-4 mr-2" />
+            {barcodeScannerActive ? 'Scanner ON' : 'Scanner OFF'}
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -169,7 +333,8 @@ export default function POSPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Search products..."
+                    ref={searchInputRef}
+                    placeholder="Search products... (F2)"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-10"
@@ -181,18 +346,29 @@ export default function POSPage() {
                 {loading ? (
                   <p className="text-center py-8 text-gray-500">Loading...</p>
                 ) : products.length === 0 ? (
-                  <p className="text-center py-8 text-gray-500">No products found</p>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No products found</p>
+                    {search && (
+                      <Button
+                        variant="link"
+                        onClick={() => setSearch('')}
+                        className="mt-2"
+                      >
+                        Clear search
+                      </Button>
+                    )}
+                  </div>
                 ) : (
                   products.map((product) => (
                     <div
                       key={product.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                       onClick={() => addToCart(product)}
                     >
-                      <div>
+                      <div className="flex-1">
                         <p className="font-medium">{product.name}</p>
                         <p className="text-sm text-gray-500">
-                          {product.code} • Stock: {product.stockLevel}
+                          {product.code} • {product.category.name} • Stock: {product.stockLevel}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -211,14 +387,30 @@ export default function POSPage() {
         <div>
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5" />
-                Cart ({cart.length})
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <ShoppingCart className="h-5 w-5" />
+                  Cart ({cart.length})
+                </CardTitle>
+                {cart.length > 0 && !showPayment && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => confirm('Clear cart?') && setCart([])}
+                    title="Clear Cart (Esc)"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {cart.length === 0 ? (
-                <p className="text-center py-16 text-gray-500">Cart is empty</p>
+                <div className="text-center py-16">
+                  <ShoppingCart className="mx-auto h-12 w-12 text-gray-300" />
+                  <p className="mt-2 text-gray-500">Cart is empty</p>
+                  <p className="text-xs text-gray-400 mt-1">Scan or click products to add</p>
+                </div>
               ) : (
                 <>
                   <div className="space-y-3 mb-4 max-h-[300px] overflow-y-auto">
@@ -248,12 +440,16 @@ export default function POSPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => updateQuantity(item.id, 1)}
+                              disabled={item.quantity >= item.stockLevel}
                             >
                               <Plus className="h-3 w-3" />
                             </Button>
                           </div>
                           <p className="font-bold">₱{(item.unitPrice * item.quantity).toFixed(2)}</p>
                         </div>
+                        {item.quantity >= item.stockLevel && (
+                          <p className="text-xs text-orange-600 mt-1">Maximum stock reached</p>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -276,7 +472,7 @@ export default function POSPage() {
                   {!showPayment ? (
                     <Button className="w-full mt-4" onClick={handleCheckout}>
                       <DollarSign className="mr-2 h-4 w-4" />
-                      Checkout
+                      Checkout (F9)
                     </Button>
                   ) : (
                     <div className="mt-4 space-y-3">
@@ -297,17 +493,19 @@ export default function POSPage() {
                       {paymentMethod === 'CASH' && (
                         <>
                           <div>
-                            <label className="block text-sm font-medium mb-1">Amount Received</label>
+                            <label className="block text-sm font-medium mb-1">Amount Received *</label>
                             <Input
                               type="number"
                               step="0.01"
+                              min={total}
                               value={receivedAmount}
                               onChange={(e) => setReceivedAmount(e.target.value)}
-                              placeholder="0.00"
+                              placeholder={`Minimum: ${total.toFixed(2)}`}
+                              autoFocus
                             />
                           </div>
                           {receivedAmount && (
-                            <div className="flex justify-between font-bold">
+                            <div className="flex justify-between font-bold text-lg">
                               <span>Change:</span>
                               <span className={change >= 0 ? 'text-blue-600' : 'text-red-600'}>
                                 ₱{change.toFixed(2)}
@@ -331,6 +529,7 @@ export default function POSPage() {
                             setShowPayment(false);
                             setReceivedAmount('');
                           }}
+                          disabled={processing}
                         >
                           Back
                         </Button>
@@ -339,6 +538,19 @@ export default function POSPage() {
                   )}
                 </>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Keyboard Shortcuts Help */}
+          <Card className="mt-4">
+            <CardContent className="pt-4">
+              <p className="text-xs font-medium text-gray-700 mb-2">Keyboard Shortcuts:</p>
+              <div className="text-xs text-gray-500 space-y-1">
+                <p><kbd className="px-1 py-0.5 bg-gray-100 rounded">F2</kbd> - Focus Search</p>
+                <p><kbd className="px-1 py-0.5 bg-gray-100 rounded">F4</kbd> - Toggle Scanner</p>
+                <p><kbd className="px-1 py-0.5 bg-gray-100 rounded">F9</kbd> - Checkout</p>
+                <p><kbd className="px-1 py-0.5 bg-gray-100 rounded">Esc</kbd> - Clear Cart</p>
+              </div>
             </CardContent>
           </Card>
         </div>
