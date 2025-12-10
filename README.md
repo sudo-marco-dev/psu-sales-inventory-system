@@ -329,15 +329,15 @@ psu-sales-inventory-system/
 
 | Feature | Admin | Cashier | Inventory Clerk |
 |---------|-------|---------|----------------|
-| Dashboard | ✅ | ✅ | ✅ |
-| POS (Sales) | ✅ | ✅ | ❌ |
-| Sales History | ✅ | ✅ | ❌ |
-| Products | ✅ | ❌ | ✅ |
-| Purchases | ✅ | ❌ | ✅ |
-| Suppliers | ✅ | ❌ | ✅ |
-| Reports | ✅ | ❌ | ❌ |
-| Users | ✅ | ❌ | ❌ |
-| Settings | ✅ | ❌ | ❌ |
+| Dashboard | ✅ |    ✅ |    ✅ |
+| POS (Sales) ✅ |    ✅ |    ❌ |
+|Sales History✅ |    ✅ |    ❌ |
+| Products |  ✅ |    ❌ |    ✅ |
+| Purchases | ✅ |    ❌ |    ✅ |
+| Suppliers | ✅ |    ❌ |    ✅ |
+| Reports |   ✅ |    ❌    | ❌ |
+| Users |     ✅ |    ❌ |    ❌ |
+| Settings |  ✅ |    ❌ |    ❌ |
 
 ---
 
