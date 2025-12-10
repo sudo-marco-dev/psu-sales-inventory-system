@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { PlusCircle, Filter } from 'lucide-react';
+import { PlusCircle, Filter, Barcode as BarcodeIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ interface Product {
   code: string;
   name: string;
   description: string | null;
+  barcode: string | null;
   unitPrice: number;
   stockLevel: number;
   reorderLevel: number;
@@ -30,7 +31,7 @@ interface Supplier {
   companyName: string;
 }
 
-type FilterType = 'all' | 'low-stock' | 'out-of-stock' | 'in-stock';
+type FilterType = 'all' | 'low-stock' | 'out-of-stock' | 'in-stock' | 'no-barcode';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -95,6 +96,7 @@ export default function ProductsPage() {
       filtered = filtered.filter(p => 
         p.name.toLowerCase().includes(searchLower) ||
         p.code.toLowerCase().includes(searchLower) ||
+        p.barcode?.toLowerCase().includes(searchLower) ||
         p.category.name.toLowerCase().includes(searchLower)
       );
     }
@@ -109,6 +111,9 @@ export default function ProductsPage() {
         break;
       case 'in-stock':
         filtered = filtered.filter(p => p.stockLevel > p.reorderLevel);
+        break;
+      case 'no-barcode':
+        filtered = filtered.filter(p => !p.barcode);
         break;
     }
 
@@ -138,6 +143,7 @@ export default function ProductsPage() {
       lowStock: products.filter(p => p.stockLevel > 0 && p.stockLevel <= p.reorderLevel).length,
       outOfStock: products.filter(p => p.stockLevel === 0).length,
       inStock: products.filter(p => p.stockLevel > p.reorderLevel).length,
+      noBarcode: products.filter(p => !p.barcode).length,
     };
   };
 
@@ -151,7 +157,13 @@ export default function ProductsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Products</h1>
           <p className="text-gray-500 mt-1">Manage your inventory</p>
         </div>
-        <div>
+        <div className="flex gap-2">
+          <Link href="/dashboard/products/barcode/bulk">
+            <Button variant="outline">
+              <BarcodeIcon className="mr-2 h-4 w-4" />
+              Bulk Barcodes
+            </Button>
+          </Link>
           <Link href="/dashboard/products/add">
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -170,7 +182,7 @@ export default function ProductsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search products by name, code, or category..."
+                  placeholder="Search products by name, code, barcode, or category..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10"
@@ -216,6 +228,14 @@ export default function ProductsPage() {
                 className={counts.outOfStock > 0 ? 'border-red-500 text-red-600' : ''}
               >
                 Out of Stock ({counts.outOfStock})
+              </Button>
+              <Button
+                variant={activeFilter === 'no-barcode' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setActiveFilter('no-barcode')}
+                className={counts.noBarcode > 0 ? 'border-blue-500 text-blue-600' : ''}
+              >
+                No Barcode ({counts.noBarcode})
               </Button>
               {hasActiveFilters && (
                 <Button
@@ -313,21 +333,34 @@ export default function ProductsPage() {
                     <div className="flex-1">
                       <CardTitle className="text-lg">{product.name}</CardTitle>
                       <p className="text-sm text-gray-500">{product.code}</p>
+                      {product.barcode && (
+                        <p className="text-xs text-blue-600 flex items-center gap-1 mt-1">
+                          <BarcodeIcon className="h-3 w-3" />
+                          {product.barcode}
+                        </p>
+                      )}
                     </div>
-                    {isOutOfStock && (
-                      <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                        Out
-                      </span>
-                    )}
-                    {isLowStock && (
-                      <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
-                        Low
-                      </span>
-                    )}
+                    <div className="flex flex-col gap-1">
+                      {isOutOfStock && (
+                        <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                          Out
+                        </span>
+                      )}
+                      {isLowStock && (
+                        <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                          Low
+                        </span>
+                      )}
+                      {!product.barcode && (
+                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                          No BC
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <dl className="space-y-2 text-sm">
+                  <dl className="space-y-2 text-sm mb-3">
                     <div className="flex justify-between">
                       <dt className="text-gray-500">Category:</dt>
                       <dd className="font-medium">{product.category.name}</dd>
@@ -352,6 +385,12 @@ export default function ProductsPage() {
                       <dd className="font-medium text-sm truncate">{product.supplier.companyName}</dd>
                     </div>
                   </dl>
+                  <Link href={`/dashboard/products/${product.id}/barcode`}>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <BarcodeIcon className="mr-2 h-3 w-3" />
+                      {product.barcode ? 'Manage Barcode' : 'Generate Barcode'}
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             );
