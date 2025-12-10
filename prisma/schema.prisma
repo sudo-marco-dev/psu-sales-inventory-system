@@ -59,6 +59,7 @@ model Product {
   code         String   @unique
   name         String
   description  String?
+  barcode      String?  @unique
   categoryId   String
   supplierId   String
   unitPrice    Float
